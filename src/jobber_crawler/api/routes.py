@@ -31,6 +31,7 @@ async def trigger_scrape(
     keywords: list[str] = Query(default=["software engineer"]),
     location: str | None = Query(default=None),
     max_results: int = Query(default=100, le=5000),
+    posted_within_hours: int | None = Query(default=None, ge=1),
 ):
     available = list_adapters()
     if source not in available:
@@ -40,6 +41,7 @@ async def trigger_scrape(
         keywords=keywords,
         location=location,
         max_results=max_results,
+        posted_within_hours=posted_within_hours,
     )
 
     # Run scrape in background so the API returns immediately
@@ -51,6 +53,7 @@ async def trigger_scrape(
         "keywords": keywords,
         "location": location,
         "max_results": max_results,
+        "posted_within_hours": posted_within_hours,
     }
 
 

@@ -61,7 +61,7 @@ class LinkedInScraper(BaseScraper):
 
             try:
                 job_cards = await self._fetch_search_page(
-                    keywords_str, request.location, start
+                    keywords_str, request.location, start, request.posted_within_hours
                 )
             except Exception:
                 logger.exception("linkedin_search_error", start=start)
@@ -101,7 +101,7 @@ class LinkedInScraper(BaseScraper):
 
     @scrape_retry
     async def _fetch_search_page(
-        self, keywords: str, location: str | None, start: int
+        self, keywords: str, location: str | None, start: int, posted_within_hours: int | None = None
     ) -> list:
         params = {
             "keywords": keywords,
@@ -110,6 +110,8 @@ class LinkedInScraper(BaseScraper):
         }
         if location:
             params["location"] = location
+        if posted_within_hours:
+            params["f_TPR"] = f"r{posted_within_hours * 3600}"
 
         headers = {"User-Agent": random.choice(USER_AGENTS)}
         response = await self._client.get(self.SEARCH_URL, params=params, headers=headers)

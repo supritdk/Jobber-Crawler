@@ -9,6 +9,7 @@ class ScrapeRequest:
     location: str | None = None
     filters: dict = field(default_factory=dict)
     max_results: int = 100
+    posted_within_hours: int | None = None
 
 
 @dataclass
