@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install:*)",
+      "Bash(python -c \"from jobber_crawler.main import app; print\\(''App created successfully''\\); print\\(''Routes:'', [r.path for r in app.routes]\\)\")",
+      "Bash(python -c \":*)",
+      "Bash(ruff check:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(docker compose:*)",
+      "Bash(pg_isready)",
+      "Bash(brew services:*)",
+      "Bash(brew list:*)",
+      "Bash(JOBBER_GREENHOUSE_BOARD_TOKENS=stripe python -c \":*)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(xargs ls:*)",
+      "Bash(chmod +x /Users/suprit/projects/jobber-crawler/deploy/deploy.sh /Users/suprit/projects/jobber-crawler/deploy/setup-claude-code.sh)",
+      "Bash(git init:*)",
+      "Bash(git remote:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

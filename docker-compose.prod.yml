@@ -1,0 +1,92 @@
+###############################################################################
+# docker-compose.prod.yml — Production stack for EC2
+#
+# Usage:
+#   cp .env.example .env   # edit with real values
+#   docker compose -f docker-compose.prod.yml up -d
+#   docker compose -f docker-compose.prod.yml logs -f crawler
+###############################################################################
+
+services:
+  # ─── PostgreSQL ────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${JOBBER_DB_USER:-jobber}
+      POSTGRES_PASSWORD: ${JOBBER_DB_PASSWORD:?Set JOBBER_DB_PASSWORD in .env}
+      POSTGRES_DB: ${JOBBER_DB_NAME:-jobber_crawler}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${JOBBER_DB_USER:-jobber} -d ${JOBBER_DB_NAME:-jobber_crawler}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Migrations (run once then exit) ───────────────────────────────────────
+  migrate:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      JOBBER_DATABASE_URL: postgresql+asyncpg://${JOBBER_DB_USER:-jobber}:${JOBBER_DB_PASSWORD}@postgres:5432/${JOBBER_DB_NAME:-jobber_crawler}
+    command: ["python", "-m", "alembic", "upgrade", "head"]
+    restart: "no"
+
+  # ─── Crawler App ──────────────────────────────────────────────────────────
+  crawler:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    env_file: .env
+    environment:
+      JOBBER_DATABASE_URL: postgresql+asyncpg://${JOBBER_DB_USER:-jobber}:${JOBBER_DB_PASSWORD}@postgres:5432/${JOBBER_DB_NAME:-jobber_crawler}
+      JOBBER_LOG_JSON: "true"
+    ports:
+      - "127.0.0.1:8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ─── Nginx reverse proxy ──────────────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      crawler:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - certbot-etc:/etc/letsencrypt:ro
+      - certbot-var:/var/lib/letsencrypt:ro
+
+  # ─── Certbot (optional — for HTTPS) ───────────────────────────────────────
+  certbot:
+    image: certbot/certbot
+    depends_on:
+      - nginx
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do sleep 12h & wait $${!}; certbot renew --quiet; done'"
+
+volumes:
+  pgdata:
+    driver: local
+  certbot-etc:
+  certbot-var:
