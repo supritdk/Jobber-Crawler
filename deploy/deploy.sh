@@ -13,7 +13,7 @@ APP_DIR="$HOME/jobber-crawler"
 REPO_URL="${JOBBER_REPO_URL:-git@github.com:your-org/jobber-crawler.git}"
 DB_NAME="jobber_crawler"
 DB_USER="jobber"
-DB_PASS="${JOBBER_DB_PASSWORD:-$(openssl rand -base64 24)}"
+DB_PASS="${JOBBER_DB_PASSWORD:-$(openssl rand -hex 16)}"
 PYTHON_VERSION="3.12"
 
 # ─── Colors ──────────────────────────────────────────────────────────────────
