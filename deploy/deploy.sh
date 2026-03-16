@@ -52,6 +52,14 @@ sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'"
 
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};"
 
+# Switch local auth from peer to md5 so password auth works over localhost
+PG_HBA=$(sudo -u postgres psql -t -c "SHOW hba_file;" | xargs)
+if sudo grep -q "local.*all.*all.*peer" "$PG_HBA"; then
+    info "Switching PostgreSQL local auth from peer to md5..."
+    sudo sed -i 's/local\s\+all\s\+all\s\+peer/local   all             all                                     md5/' "$PG_HBA"
+    sudo systemctl restart postgresql
+fi
+
 info "PostgreSQL ready — user: ${DB_USER}, db: ${DB_NAME}"
 
 # ─── Step 3: Clone / update repo ────────────────────────────────────────────

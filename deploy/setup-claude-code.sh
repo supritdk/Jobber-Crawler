@@ -57,16 +57,16 @@ if ! command -v tmux &> /dev/null; then
 fi
 
 # Create a convenience alias
-if ! grep -q "alias cc=" ~/.bashrc 2>/dev/null; then
+if ! grep -q "alias jc=" ~/.bashrc 2>/dev/null; then
     cat >> ~/.bashrc << 'ALIASEOF'
 
 # Jobber Crawler shortcuts
-alias cc='cd ~/jobber-crawler && claude'
+alias jc='cd ~/jobber-crawler && claude'
 alias jc-logs='sudo journalctl -u jobber-crawler -f'
 alias jc-restart='sudo systemctl restart jobber-crawler'
 alias jc-status='sudo systemctl status jobber-crawler'
 ALIASEOF
-    info "Added shell aliases: cc, jc-logs, jc-restart, jc-status"
+    info "Added shell aliases: jc, jc-logs, jc-restart, jc-status"
 fi
 
 # ─── Done ────────────────────────────────────────────────────────────────────
@@ -78,11 +78,11 @@ echo "  Start developing:"
 echo "    cd ~/jobber-crawler && claude"
 echo ""
 echo "  Or use the shortcut:"
-echo "    cc"
+echo "    jc"
 echo ""
 echo "  Tip: Use tmux for persistent sessions:"
 echo "    tmux new -s dev"
-echo "    cc"
+echo "    jc"
 echo "    # Detach: Ctrl+B then D"
 echo "    # Reattach: tmux attach -t dev"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
