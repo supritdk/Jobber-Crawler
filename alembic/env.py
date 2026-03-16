@@ -1,4 +1,5 @@
 import asyncio
+import os
 from logging.config import fileConfig
 
 from alembic import context
@@ -11,6 +12,13 @@ from jobber_crawler.models.scraped_job import ScrapedJob  # noqa: F401 - ensure 
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+# Read DB URL from environment (set in .env via JOBBER_DATABASE_URL)
+db_url = os.environ.get(
+    "JOBBER_DATABASE_URL",
+    "postgresql+asyncpg://jobber:jobber@localhost:5432/jobber_crawler",
+)
+config.set_main_option("sqlalchemy.url", db_url)
 
 target_metadata = Base.metadata
 
